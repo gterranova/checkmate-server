@@ -64,9 +64,9 @@ func (p *Project) Describe() string {
 
 	ret := make([]string, 0)
 	if loc := p.locationConditions.ApplicableCondition(); loc != nil {
-		ret = append(ret, fmt.Sprintf("Progetto della potenza nominale di **%v MW**, situato in **%v**.", p.capacityMW, loc.Title))
+		ret = append(ret, fmt.Sprintf("Progetto della potenza nominale di **%v MW**, situato in **%v**.  ", p.capacityMW, loc.Title))
 	} else {
-		ret = append(ret, fmt.Sprintf("Progetto della potenza nominale di **%v MW**.", p.capacityMW))
+		ret = append(ret, fmt.Sprintf("Progetto della potenza nominale di **%v MW**.  ", p.capacityMW))
 	}
 
 	if p.CanElevateThresholds() {
@@ -75,21 +75,21 @@ func (p *Project) Describe() string {
 		case p.Art22bisArea() == Art22bis:
 			ret = append(ret, p.locationConditions.Describe()...)
 
-			ret = append(ret, `Il Progetto **può beneficiare dell'elevazione delle soglie** per lo Screening e la VIA ai sensi dell'art. 47, comma 11-bis del decreto 13/2023 secondo cui le soglie per la VIA statale e verifica di assoggettabilità/screening “*sono rispettivamente fissati a 20 MW e 10 MW, purché:*`)
-			ret = append(ret, `[...] *b)  l'impianto si trovi nelle aree di cui all'articolo 22-bis del decreto legislativo 8 novembre 2021, n. 199;* **[Nota: aree industriali, discariche e cave]** [...]”`)
+			ret = append(ret, `Il Progetto **può beneficiare dell'elevazione delle soglie** per lo Screening e la VIA ai sensi dell'art. 47, comma 11-bis del decreto 13/2023 secondo cui le soglie per la VIA statale e verifica di assoggettabilità/screening " *sono rispettivamente fissati a 20 MW e 10 MW, purché:*`)
+			ret = append(ret, `[...] *b)  l'impianto si trovi nelle aree di cui all'articolo 22-bis del decreto legislativo 8 novembre 2021, n. 199;* **[Nota: aree industriali, discariche e cave]** [...]"`)
 
 		case p.SuitableArea() != NotApplicable:
 			ret = append(ret, p.suitabilityConditions.Describe()...)
 
-			ret = append(ret, `Il Progetto **può beneficiare dell'elevazione delle soglie** per lo Screening e la VIA ai sensi dell'art. 47, comma 11-bis del decreto 13/2023 secondo cui le soglie per la VIA statale e verifica di assoggettabilità/screening “*sono rispettivamente fissati a 20 MW e 10 MW, purché:*`)
-			ret = append(ret, `*a) l'impianto si trovi nelle aree classificate idonee ai sensi dell'articolo 20 del decreto legislativo 8 novembre 2021, n. 199, ivi comprese le aree di cui al comma 8 del medesimo articolo 20;* [...]”`)
+			ret = append(ret, `Il Progetto **può beneficiare dell'elevazione delle soglie** per lo Screening e la VIA ai sensi dell'art. 47, comma 11-bis del decreto 13/2023 secondo cui le soglie per la VIA statale e verifica di assoggettabilità/screening " *sono rispettivamente fissati a 20 MW e 10 MW, purché:*`)
+			ret = append(ret, `*a) l'impianto si trovi nelle aree classificate idonee ai sensi dell'articolo 20 del decreto legislativo 8 novembre 2021, n. 199, ivi comprese le aree di cui al comma 8 del medesimo articolo 20;* [...]"`)
 
 		case p.NonUnsuitableDM2010Area() == NotApplicable:
 			ret = append(ret, p.nationalGuidelinesConditions.Describe()...)
 
-			ret = append(ret, `Il Progetto **può beneficiare dell'elevazione delle soglie** per lo Screening e la VIA ai sensi dell'art. 47, comma 11-bis del decreto 13/2023 secondo cui le soglie per la VIA statale e verifica di assoggettabilità/screening “*sono rispettivamente fissati a 20 MW e 10 MW, purché:*`)
+			ret = append(ret, `Il Progetto **può beneficiare dell'elevazione delle soglie** per lo Screening e la VIA ai sensi dell'art. 47, comma 11-bis del decreto 13/2023 secondo cui le soglie per la VIA statale e verifica di assoggettabilità/screening " *sono rispettivamente fissati a 20 MW e 10 MW, purché:*`)
 
-			ret = append(ret, `[...] *c)  fuori dei casi di cui alle lettere a) e b), l'impianto non sia situato all'interno di aree comprese tra quelle specificamente elencate e individuate ai sensi della lettera f) dell'allegato 3 annesso al decreto del Ministro dello sviluppo economico 10 settembre 2010, pubblicato nella Gazzetta Ufficiale n. 219 del 18 settembre 2010*”.`)
+			ret = append(ret, `[...] *c)  fuori dei casi di cui alle lettere a) e b), l'impianto non sia situato all'interno di aree comprese tra quelle specificamente elencate e individuate ai sensi della lettera f) dell'allegato 3 annesso al decreto del Ministro dello sviluppo economico 10 settembre 2010, pubblicato nella Gazzetta Ufficiale n. 219 del 18 settembre 2010*".`)
 		}
 	} else {
 		ret = append(ret, p.suitabilityConditions.Describe()...)

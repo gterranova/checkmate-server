@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"image/color"
+	"math"
 	"strconv"
 
 	"fyne.io/fyne/v2"
@@ -46,7 +47,7 @@ func newMainWindow(app fyne.App) *mainWindow {
 }
 
 func (w *mainWindow) Update(project *Project) {
-	if project.capacityMW < ScreeningThreshold || project.locationConditions.Art22bisArea() == Art22bis {
+	if project.capacityMW < (ScreeningThreshold/2) || project.locationConditions.Art22bisArea() == Art22bis {
 		w.HideSuitableConditions()
 		w.HideDM2010Conditions()
 	} else {
@@ -107,7 +108,7 @@ func (w *mainWindow) Create(project *Project) {
 	projectCapacityMW.SetText("1")
 	projectCapacityMW.OnChanged = func(s string) {
 		power, _ := strconv.ParseFloat(s, 32)
-		project.SetPower(power)
+		project.SetPower(math.Round(power*100) / 100)
 		w.Update(project)
 	}
 
@@ -272,7 +273,15 @@ func (w *mainWindow) Create(project *Project) {
 		details := widget.NewRichTextFromMarkdown(project.Describe())
 		details.Wrapping = fyne.TextWrapWord
 		d := dialog.NewCustom("Dettagli", "Chiudi", details, w.window)
-		d.Resize(w.window.Canvas().Size())
+		//d.Resize(w.window.Canvas().Size())
+		d.Resize(fyne.NewSize(600, 400))
+		d.Show()
+	})
+
+	about := widget.NewButtonWithIcon("Informazioni", w.app.Settings().Theme().Icon(theme.IconNameInfo), func() {
+
+		d := dialog.NewCustom("Informazioni", "Chiudi", aboutView(), w.window)
+		d.Resize(fyne.NewSize(600, 400))
 		d.Show()
 	})
 
@@ -280,7 +289,7 @@ func (w *mainWindow) Create(project *Project) {
 	image.FillMode = canvas.ImageFillOriginal
 
 	topBar := container.NewBorder(nil, nil, container.NewCenter(image), nil, form)
-	bottomBar := container.NewBorder(nil, nil, nil, report, w.response)
+	bottomBar := container.NewBorder(nil, nil, nil, container.NewHBox(about, report), w.response)
 
 	w.content = container.NewBorder(topBar, bottomBar, nil, nil,
 		w.tabContainer,
@@ -291,7 +300,7 @@ func (w *mainWindow) CreateAndShow(project *Project) {
 	w.Create(project)
 	w.Update(project)
 	w.window.SetContent(container.New(layout.NewMaxLayout(), w.content))
-	w.window.Resize(fyne.NewSize(1200, 600))
+	w.window.Resize(fyne.NewSize(1200, 800))
 	w.window.SetIcon(assets.ResourceIconPng)
 	w.window.CenterOnScreen()
 	w.window.Show()
