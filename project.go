@@ -106,7 +106,7 @@ func (p *Project) Describe() string {
 		ret = append(ret, p.screeningGuidelinesConditions.Describe()...)
 		ret = append(ret, fmt.Sprintf("**%v**", p.Evaluate()))
 
-	} else if procedure == nil && p.capacityMW >= screeningThreshold*0.5 {
+	} else if procedure == nil && p.screeningGuidelinesConditions.ShouldHalveThreshold() == NotApplicable && p.capacityMW >= screeningThreshold*0.5 {
 		ret = append(ret, fmt.Sprintf("**%v**", p.Evaluate()))
 
 		ret = append(ret, fmt.Sprintf(`**Si raccomanda di verificare che non ricorra alcuno dei criteri previsti dalle Linee Guida per la verifica di assoggettabilità a VIA, Allegate al DM 30/03/2015, in applicazione dei quali la soglia per lo screening sarebbe soggetta a dimezzamento. In tal caso, infatti, per effetto del dimezzamento, la soglia per lo screening diventerebbe %v MW, anziché %v MW, ed il Progetto andrebbe sottoposto a verifica di assoggettabilità a VIA.**`, screeningThreshold*0.5, screeningThreshold))
