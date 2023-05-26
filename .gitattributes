@@ -1,1 +1,1 @@
-/version/version.go export-subst
+internal/version.go export-subst
