@@ -19,7 +19,7 @@ const (
 
 // Represents all de parts for the border layout of the wizard
 type WizardContainers struct {
-	titleContainer        *fyne.Container
+	//titleContainer        *fyne.Container
 	stepsContainer        *fyne.Container
 	taskContainer         *fyne.Container
 	stepsButtonsContainer *fyne.Container
@@ -28,7 +28,7 @@ type WizardContainers struct {
 // Instantiates a new container group
 func (w *Wizard) buildContainers() *WizardContainers {
 	return &WizardContainers{
-		titleContainer:        w.buildTitleContainer(),
+		//titleContainer:        w.buildTitleContainer(),
 		stepsContainer:        w.buildStepsContainer(),
 		taskContainer:         w.buildTaskContainer(),
 		stepsButtonsContainer: w.buildStepButtonsContainer(),
@@ -37,40 +37,43 @@ func (w *Wizard) buildContainers() *WizardContainers {
 }
 
 // Builds the header container, with title and caption
-func (w *Wizard) buildTitleContainer() *fyne.Container {
-	title := canvas.NewText(w.config.GetTitle(), theme.ForegroundColor())
-	title.TextSize = 20
-	title.Alignment = fyne.TextAlignCenter
+//func (w *Wizard) buildTitleContainer() *fyne.Container {
+//	title := canvas.NewText(w.config.GetTitle(), theme.ForegroundColor())
+//	title.TextSize = 20
+//	title.Alignment = fyne.TextAlignCenter
 
-	caption := canvas.NewText(w.Steps[w.currentStep].GetCaption(), theme.ForegroundColor())
-	caption.TextSize = 10
-	caption.Alignment = fyne.TextAlignCenter
+//	caption := canvas.NewText(w.Steps[w.currentStep].GetCaption(), theme.ForegroundColor())
+//	caption.TextSize = 10
+//	caption.Alignment = fyne.TextAlignCenter
 
-	return container.NewVBox(
-		title,
-		caption,
-		widget.NewSeparator(),
-	)
-}
+//	return container.NewVBox(
+//		title,
+//		caption,
+//		widget.NewSeparator(),
+//	)
+//}
 
 // Rebuilds the header container
-func (w *Wizard) rebuildTitleContainer() {
-	tc := w.buildTitleContainer()
-	w.VBox.Objects[0] = tc
-}
+//func (w *Wizard) rebuildTitleContainer() {
+//	tc := w.buildTitleContainer()
+//	w.VBox.Objects[1] = tc
+//}
 
 // Builds steps lists for showing current task
 func (w *Wizard) buildStepsContainer() *fyne.Container {
 	vb := container.NewVBox()
 	for i, step := range w.Steps {
+		if step.Disabled() {
+			continue
+		}
 		t := canvas.NewText(step.GetTitle(), theme.DisabledColor())
 		t.TextSize = 10
+		t.TextStyle = fyne.TextStyle{
+			Bold: true,
+		}
+		t.Alignment = fyne.TextAlignTrailing
 		if i == w.currentStep {
-			t.Alignment = fyne.TextAlignTrailing
 			t.Color = theme.ForegroundColor()
-			t.TextStyle = fyne.TextStyle{
-				Bold: true,
-			}
 		}
 		vb.Add(t)
 	}
@@ -92,9 +95,7 @@ func (w *Wizard) buildTaskContainer() *fyne.Container {
 // Rebuilds current task container, tipically when step changes
 func (w *Wizard) rebuildTaskContainer() {
 	w.containers.taskContainer = w.buildTaskContainer()
-	w.HBox.Objects[1] = container.NewPadded(
-		container.NewPadded(w.containers.taskContainer),
-	)
+	w.HBox.Objects[1] = w.containers.taskContainer
 }
 
 // Builds on finish wizard steps
@@ -108,38 +109,49 @@ func (w *Wizard) buildStepButtonsContainer() *fyne.Container {
 	w.buildStepButtons()
 	w.refreshButtonStatus()
 
-	return container.NewHBox(
+	container := container.NewHBox(
 		layout.NewSpacer(),
 		w.BackButton,
 		w.NextButton,
-		w.FinishButton,
-		w.CancelButton,
 	)
+	if w.config.CanFinish() {
+		container.Add(w.FinishButton)
+	}
+	if w.config.CanClose() {
+		container.Add(w.CancelButton)
+	}
+	return container
 }
 
 // Generates and assign to Wizard all the buttons of the bottom lane
 func (w *Wizard) buildStepButtons() {
 	w.BackButton = w.buildBackButton()
 	w.NextButton = w.buildNextButton()
-	w.FinishButton = w.buildFinishButton()
-	w.CancelButton = w.buildCancelButton()
+	if w.config.CanFinish() {
+		w.FinishButton = w.buildFinishButton()
+	}
+	if w.config.CanClose() {
+		w.CancelButton = w.buildCancelButton()
+	}
 }
 
 // Builds the back button, this set the wizard to the previous step
 func (w *Wizard) buildBackButton() *widget.Button {
-	backButton := widget.NewButton(
-		BACK, func() {
+	backButton := widget.NewButtonWithIcon(
+		BACK, theme.NavigateBackIcon(), func() {
 			w.Back()
 		})
+	backButton.IconPlacement = widget.ButtonIconLeadingText
 	return backButton
 }
 
 // Builds the next button, this set the wizard to the forward step
 func (w *Wizard) buildNextButton() *widget.Button {
-	nextButton := widget.NewButton(
-		NEXT, func() {
+	nextButton := widget.NewButtonWithIcon(
+		NEXT, theme.NavigateNextIcon(), func() {
 			w.Next()
 		})
+	nextButton.IconPlacement = widget.ButtonIconTrailingText
 	return nextButton
 }
 
@@ -159,4 +171,9 @@ func (w *Wizard) buildCancelButton() *widget.Button {
 			w.config.OnClose()
 		})
 	return cancelButton
+}
+
+// Recreates steps container and replaces in the container
+func (w *Wizard) RebuildStepsContainer() {
+	w.rebuildStepsContainer()
 }

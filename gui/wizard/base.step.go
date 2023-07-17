@@ -30,3 +30,7 @@ func (s *BaseWizardStep) OnValidate() bool {
 
 func (s *BaseWizardStep) OnLeave() {
 }
+
+func (s *BaseWizardStep) Disabled() bool {
+	return false
+}

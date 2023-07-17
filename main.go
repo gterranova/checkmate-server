@@ -30,8 +30,8 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 package main
 
-import "terra9.it/vadovia/cmd"
+import "terra9.it/vadovia/gui"
 
 func main() {
-	cmd.Execute()
+	gui.NewApp().Run()
 }

@@ -181,7 +181,7 @@ func (l *MultiSelectListLayout) MinSize(obj []fyne.CanvasObject) fyne.Size {
 	contentMin := obj[0].MinSize()
 
 	width := contentMin.Width
-	height := fyne.Min(float32(len(l.d.items)*int(contentMin.Height))+theme.Padding()*2, 34*6)
-
+	single := float32(contentMin.Height) + theme.Padding()
+	height := float32(len(l.d.items)) * single
 	return fyne.NewSize(width, height)
 }

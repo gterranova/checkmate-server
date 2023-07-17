@@ -4,14 +4,18 @@ import "fyne.io/fyne/v2"
 
 // Wizard configuration parameters
 const (
-	ContentTitleTextSize = 14
-	ContentTextSize      = 11
+	ContentTitleTextSize   = 14
+	ContentCaptionTextSize = 10
+	ContentTextSize        = 11
 )
 
 type WizardConfig interface {
 	GetTitle() string
 	OnClose()
 	OnFinish() *fyne.Container
+
+	CanClose() bool
+	CanFinish() bool
 }
 
 type BaseWizardConfig struct {

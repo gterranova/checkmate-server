@@ -11,6 +11,8 @@ type WizardStep interface {
 	OnLoad() *fyne.Container
 	OnValidate() bool
 	OnLeave()
+	Disabled() bool
+	Refresh()
 }
 
 // This method controls the back button behaviour
@@ -20,6 +22,10 @@ func (w *Wizard) Back() {
 	}
 	w.Steps[w.currentStep].OnLeave()
 	w.currentStep--
+	if w.Steps[w.currentStep].Disabled() {
+		w.Back()
+		return
+	}
 	w.refreshContainers()
 }
 
@@ -34,6 +40,10 @@ func (w *Wizard) Next() {
 	}
 	w.Steps[w.currentStep].OnLeave()
 	w.currentStep++
+	if w.Steps[w.currentStep].Disabled() {
+		w.Next()
+		return
+	}
 	w.refreshContainers()
 }
 
@@ -57,14 +67,16 @@ func (w *Wizard) refreshContainers() {
 	w.refreshButtonStatus()
 	w.rebuildTaskContainer()
 	w.rebuildStepsContainer()
-	w.rebuildTitleContainer()
+	//w.rebuildTitleContainer()
 }
 
 // Refresh all steps buttons based on current step
 func (w *Wizard) refreshButtonStatus() {
 	w.refreshBackButton()
 	w.refreshNextButton()
-	w.refreshFinishButton()
+	if w.config.CanFinish() {
+		w.refreshFinishButton()
+	}
 }
 
 // Enable or Disable Back button based on current step

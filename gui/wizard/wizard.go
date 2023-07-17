@@ -45,18 +45,25 @@ func NewWizard(config WizardConfig, steps []WizardStep) *Wizard {
 // Build the main layout where all parts of wizard resides
 func (w *Wizard) buildBorderLayout() {
 	w.HBox = container.New(layout.NewFormLayout(),
-		w.containers.stepsButtonsContainer,
+		container.NewPadded(w.containers.stepsContainer),
 		w.containers.taskContainer,
 	)
-	w.VBox = container.NewVBox(
-		w.containers.titleContainer,
+	w.VBox = container.NewBorder(
+		nil, //w.containers.titleContainer,
+		container.NewCenter(w.containers.stepsButtonsContainer),
+		nil, nil,
 		w.HBox,
-		layout.NewSpacer(),
-		w.containers.stepsButtonsContainer,
 	)
 }
 
 // Implements gui.Layout, this makes possible to set the content on window
 func (w *Wizard) GetContainer() *fyne.Container {
 	return w.VBox
+}
+
+func (w *Wizard) Refresh() {
+	for _, s := range w.Steps {
+		s.Refresh()
+	}
+	w.refreshContainers()
 }
