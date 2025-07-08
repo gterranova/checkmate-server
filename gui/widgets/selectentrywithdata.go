@@ -6,8 +6,8 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-type LabellerFunc func(interface{}) string
-type OptionSelectedFunc func(interface{}) bool
+type LabellerFunc func(any) string
+type OptionSelectedFunc func(any) bool
 
 type SelectEntryWithData struct {
 	widget.BaseWidget
@@ -16,15 +16,15 @@ type SelectEntryWithData struct {
 	labeller         LabellerFunc
 	selectionChecker OptionSelectedFunc
 
-	items          []interface{}
+	items          []any
 	selectedOption string
-	selectedItem   interface{}
+	selectedItem   any
 
-	OnChanged func(item interface{})
+	OnChanged func(item any)
 }
 
 func NewSelectWithData(
-	items []interface{},
+	items []any,
 	labeller LabellerFunc,
 	selectionChecker OptionSelectedFunc) *SelectEntryWithData {
 	c := &SelectEntryWithData{
@@ -52,7 +52,7 @@ func NewSelectWithData(
 	return c
 }
 
-func (c *SelectEntryWithData) SetOnChanged(callback func(item interface{})) {
+func (c *SelectEntryWithData) SetOnChanged(callback func(item any)) {
 	c.OnChanged = callback
 }
 
@@ -78,7 +78,7 @@ func (c *SelectEntryWithData) onChanged(s string) {
 	}
 }
 
-func (c *SelectEntryWithData) SelectedItem() interface{} {
+func (c *SelectEntryWithData) SelectedItem() any {
 	return c.selectedItem
 }
 

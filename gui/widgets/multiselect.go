@@ -30,7 +30,7 @@ type MultiSelectListItem struct {
 	Index    int
 	Checked  bool
 	Disabled bool
-	Value    interface{}
+	Value    any
 }
 
 type MultiSelectListObject struct {

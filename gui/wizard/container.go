@@ -2,7 +2,6 @@ package wizard
 
 import (
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
@@ -66,17 +65,19 @@ func (w *Wizard) buildStepsContainer() *fyne.Container {
 		if step.Disabled() {
 			continue
 		}
-		t := canvas.NewText(step.GetTitle(), theme.DisabledColor())
-		t.TextSize = 10
-		t.TextStyle = fyne.TextStyle{
-			Bold: true,
-		}
-		t.Alignment = fyne.TextAlignTrailing
+		color := theme.DisabledColor()
 		if i == w.currentStep {
-			t.Color = theme.ForegroundColor()
+			color = theme.ForegroundColor()
 		}
+		current := i
+		t := newNavigationLabel(step.GetTitle(), color, nil, func(b bool) {
+			//fmt.Println(current)
+			w.SelectStep(current)
+		})
+
 		vb.Add(t)
 	}
+	vb.Resize(fyne.NewSize(200, 200))
 	hb := container.NewHBox(vb, widget.NewSeparator())
 	return hb
 }

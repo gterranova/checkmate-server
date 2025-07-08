@@ -1,19 +1,21 @@
-package gui
+package main
 
 import (
 	"fmt"
-	"image/color"
 	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"terra9.it/vadovia/core"
-	"terra9.it/vadovia/core/features"
-	"terra9.it/vadovia/gui/widgets"
-	"terra9.it/vadovia/gui/wizard"
+
+	xwidget "fyne.io/x/fyne/widget"
+
+	"terra9.it/checkmate/core"
+	"terra9.it/checkmate/gui/widgets"
+	"terra9.it/checkmate/gui/wizard"
 )
 
 // MultiselectStep implement a wizard step based on default BasewizardStep
@@ -21,39 +23,40 @@ type MultiselectStep struct {
 	wizard.BaseWizardStep
 	project   *core.Project
 	w         *mainWindow
-	feature   *features.Feature
+	feature   core.Feature
 	canvasObj fyne.CanvasObject
 }
 
 // Creates and returns the introduction step pane
-func NewMultiselectStep(project *core.Project, w *mainWindow, feature *features.Feature) *MultiselectStep {
+func NewMultiselectStep(project *core.Project, w *mainWindow, feature core.Feature) *MultiselectStep {
 	step := &MultiselectStep{project: project, w: w, feature: feature}
 	step.Content = step.CreateContent()
-	step.Caption = feature.Caption
-	step.Title = feature.Title
+	step.Caption = "" //feature.GetCaption()
+	step.Title = feature.GetTitle()
 	return step
 }
 
 func (step *MultiselectStep) CreateContent() *fyne.Container {
-	titleLabel := canvas.NewText(step.feature.Title, color.Black)
+	label := step.feature.GetTitle()
+	titleLabel := canvas.NewText(label, theme.ForegroundColor())
 	titleLabel.TextStyle = fyne.TextStyle{
 		Bold: true,
 	}
 	titleLabel.TextSize = wizard.ContentTitleTextSize
 
-	captionLabel := canvas.NewText(step.feature.Caption, color.Gray16{0x8888})
+	captionLabel := canvas.NewText(step.feature.GetTitle(), theme.DisabledColor())
 	captionLabel.TextStyle = fyne.TextStyle{
 		Bold: false,
 	}
 	captionLabel.TextSize = wizard.ContentCaptionTextSize
-	if len(step.feature.Caption) == 0 {
+	if len(step.feature.GetTitle()) == 0 {
 		captionLabel.Hide()
 	}
 
-	switch step.feature.Type {
-	case "checklist":
+	switch step.feature.(type) {
+	case *core.Checklist:
 		step.canvasObj = step.CreateChecklistContainer()
-	case "form":
+	case *core.Checkform:
 		step.canvasObj = step.CreateFormContainer()
 	default:
 		step.canvasObj = nil
@@ -68,9 +71,9 @@ func (step *MultiselectStep) CreateChecklistContainer() *widgets.MultiSelectList
 	for i, c := range step.feature.GetChildren() {
 		options = append(options, &widgets.MultiSelectListItem{
 			Index:    i,
-			Value:    c,
-			Checked:  c.Value != nil && c.Value.(bool),
-			Disabled: c.Disabled,
+			Value:    c.(*core.Checkbox),
+			Checked:  c.GetValue().(bool),
+			Disabled: c.IsDisabled(),
 		})
 	}
 	return widgets.NewMultiSelectList(options,
@@ -79,11 +82,11 @@ func (step *MultiselectStep) CreateChecklistContainer() *widgets.MultiSelectList
 		},
 		func(item *widgets.MultiSelectListItem, cnvObj fyne.CanvasObject) {
 			label := cnvObj.(*widget.Label)
-			label.SetText(item.Value.(*features.Feature).Title)
+			label.SetText(item.Value.(core.Feature).GetTitle())
 		},
 		func(item *widgets.MultiSelectListItem) {
-			condition := item.Value.(*features.Feature)
-			step.project.SetFeature(condition.Tag, item.Checked)
+			condition := item.Value.(core.Feature)
+			step.project.SetFeature(condition.GetTag(), item.Checked)
 			//condition.Checked = item.Checked
 			step.w.Update(step.project)
 		},
@@ -93,16 +96,32 @@ func (step *MultiselectStep) CreateChecklistContainer() *widgets.MultiSelectList
 func (step *MultiselectStep) CreateFormContainer() fyne.CanvasObject {
 	objects := make([]fyne.CanvasObject, 0)
 	for _, child := range step.feature.GetChildren() {
-		switch child.Type {
-		case "input":
+		switch t := child.(type) {
+		case *core.String:
+
 			inputFeature := child
 			control := widget.NewEntry()
-			if inputFeature.Value != nil {
-				control.SetText(fmt.Sprintf("%v", inputFeature.Value))
+			if inputFeature.GetValue() != nil {
+				control.SetText(inputFeature.GetValue().(string))
 			}
 			control.OnChanged = func(s string) {
-				power, _ := strconv.ParseFloat(s, 32)
-				step.project.SetFeature(inputFeature.Tag, power)
+				step.project.SetFeature(inputFeature.GetTag(), s)
+				step.w.Update(step.project)
+			}
+			controlLabel := widget.NewLabel(inputFeature.GetTitle())
+			controlLabel.TextStyle = fyne.TextStyle{
+				Bold: true,
+			}
+			controlLabel.Alignment = fyne.TextAlignLeading
+
+			objects = append(objects, controlLabel, control)
+		case *core.Number:
+			inputFeature := t
+			control := xwidget.NewNumericalEntry()
+			control.SetText(fmt.Sprintf("%v", inputFeature.Value))
+			control.OnChanged = func(s string) {
+				value, _ := strconv.ParseInt(s, 10, 64)
+				step.project.SetFeature(inputFeature.Tag, value)
 				step.w.Update(step.project)
 			}
 			controlLabel := widget.NewLabel(inputFeature.Title)
@@ -110,38 +129,37 @@ func (step *MultiselectStep) CreateFormContainer() fyne.CanvasObject {
 				Bold: true,
 			}
 			controlLabel.Alignment = fyne.TextAlignLeading
-
 			objects = append(objects, controlLabel, control)
-		case "select":
-			selectFeature := child
-			options := make([]interface{}, 0)
+		case *core.Select:
+			selectFeature := t
+			options := make([]any, 0)
 			for _, option := range selectFeature.GetChildren() {
-				if !option.Disabled {
+				if !option.IsDisabled() {
 					options = append(options, option)
 				}
 			}
 
 			control := widgets.NewSelectWithData(options,
-				func(i interface{}) string {
-					c := i.(*features.Feature)
-					if len(c.Reference) > 0 {
-						return fmt.Sprintf("%v (%v)", c.Title, c.Reference)
-					}
-					return c.Title
+				func(i any) string {
+					c := i.(core.Feature)
+					//if len(c.Reference) > 0 {
+					//	return fmt.Sprintf("%v (%v)", c.Title, c.Reference)
+					//}
+					return c.GetTitle()
 				},
-				func(i interface{}) bool {
-					c := i.(*features.Feature)
-					return c != nil && c.Value != nil && c.Value.(bool)
+				func(i any) bool {
+					c := i.(core.Feature)
+					return c != nil && c.GetValue() != nil && c.GetValue().(bool)
 				},
 			)
 
-			control.OnChanged = func(item interface{}) {
+			control.OnChanged = func(item any) {
 				for _, c := range options {
-					c.(*features.Feature).Value = false
-					//step.project.SetFeature(c.(*features.Feature).Tag, false)
+					c.(core.Feature).SetValue(false)
+					step.project.SetFeature(c.(core.Feature).GetTag(), false)
 				}
-				feature := item.(*features.Feature)
-				step.project.SetFeature(feature.Tag, true)
+				feature := item.(core.Feature)
+				step.project.SetFeature(feature.GetTag(), true)
 				//fmt.Println(step.project.Tags, control.SelectedItem())
 				step.w.Update(step.project)
 			}
@@ -160,7 +178,7 @@ func (step *MultiselectStep) CreateFormContainer() fyne.CanvasObject {
 }
 
 func (step *MultiselectStep) Disabled() bool {
-	return step.feature.Disabled
+	return step.feature.IsDisabled()
 }
 
 func (step *MultiselectStep) OnLeave() {
@@ -168,20 +186,31 @@ func (step *MultiselectStep) OnLeave() {
 }
 
 func (step *MultiselectStep) Refresh() {
-	switch step.feature.Type {
-	case "checklist":
+	switch step.feature.(type) {
+	case *core.Checklist:
 		obj := step.canvasObj.(*widgets.MultiSelectList)
 		options := make([]*widgets.MultiSelectListItem, 0)
 		for i, c := range step.feature.GetChildren() {
 			options = append(options, &widgets.MultiSelectListItem{
 				Index:    i,
 				Value:    c,
-				Checked:  c.Value != nil && c.Value.(bool),
-				Disabled: c.Disabled,
+				Checked:  c.GetValue().(bool),
+				Disabled: c.IsDisabled(),
 			})
 		}
 		obj.SetItems(options)
-	default:
-		step.Content.Refresh()
+	case *core.Checkform:
+		objects := step.canvasObj.(*fyne.Container).Objects
+		for i, child := range step.feature.GetChildren() {
+			if child.IsDisabled() {
+				objects[i*2].Hide()
+				objects[i*2+1].Hide()
+			} else {
+				objects[i*2].Show()
+				objects[i*2+1].Show()
+			}
+		}
+		//default:
+		//	step.Content.Refresh()
 	}
 }

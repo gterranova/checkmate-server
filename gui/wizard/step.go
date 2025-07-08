@@ -15,6 +15,13 @@ type WizardStep interface {
 	Refresh()
 }
 
+// This method move to step
+func (w *Wizard) SelectStep(step int) {
+	w.Steps[w.currentStep].OnLeave()
+	w.currentStep = step
+	w.Refresh()
+}
+
 // This method controls the back button behaviour
 func (w *Wizard) Back() {
 	if w.currentStep <= 0 {

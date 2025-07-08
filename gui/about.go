@@ -1,4 +1,4 @@
-package gui
+package main
 
 import (
 	"fyne.io/fyne/v2"
@@ -6,13 +6,16 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 
-	"terra9.it/vadovia/assets"
-	"terra9.it/vadovia/internal"
+	"terra9.it/checkmate/internal"
 )
 
 // AboutView displays the logo and a version link for application information.
-func aboutView() fyne.CanvasObject {
-	logo := canvas.NewImageFromResource(assets.ResourceLogovadoviacompactPng)
+func aboutView(app *application) fyne.CanvasObject {
+	imageRes := &fyne.StaticResource{
+		StaticContent: app.loader.MustGet("icon.png"),
+	}
+
+	logo := canvas.NewImageFromResource(imageRes)
 	logo.FillMode = canvas.ImageFillOriginal
 	content := widget.NewRichTextFromMarkdown(internal.Version.Info())
 	content.Wrapping = fyne.TextWrapWord
