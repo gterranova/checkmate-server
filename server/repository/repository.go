@@ -7,6 +7,8 @@ import (
 	"log"
 	"time"
 
+	_ "github.com/mattn/go-sqlite3"
+
 	"github.com/gofiber/fiber/v2/utils"
 	"github.com/gofiber/storage/sqlite3"
 
@@ -16,7 +18,7 @@ import (
 
 func NewStorage() *sqlite3.Storage {
 	// Init SQLite3 database
-	db, err := sql.Open("sqlite3", "./fiber.db")
+	db, err := sql.Open("sqlite3", "./db/fiber.db")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,7 +42,7 @@ func NewStorage() *sqlite3.Storage {
 
 	// Init sessions store
 	storage := sqlite3.New(sqlite3.Config{
-		Database:        "./fiber.db",
+		Database:        "./db/fiber.db",
 		Table:           "sessions",
 		Reset:           false,
 		GCInterval:      60 * time.Second,

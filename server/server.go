@@ -31,6 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -56,15 +57,16 @@ var hosts map[string]*handlers.Host
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		if _, err := os.Stat(".env"); err == nil {
-			viper.SetConfigFile(".env")
-			viper.SetConfigType("env")
-		}
+
+	flag.StringVar(&cfgFile, "c", ".env", "config file (default is .env)")
+	flag.Parse()
+
+	viper.SetConfigType("env")
+
+	if _, err := os.Stat(cfgFile); err != nil {
+		cfgFile = ".env"
 	}
+	viper.SetConfigFile(cfgFile)
 
 	viper.AutomaticEnv() // read in environment variables that match
 
@@ -80,10 +82,7 @@ func initConfig() {
 	//Get the string that is set in the CONFIG_HOSTS environment variable
 	var hostNames = strings.Split(viper.GetString("HOSTS"), " ")
 	for _, h := range hostNames {
-		hostname := fmt.Sprintf("%s:%d",
-			viper.GetString(fmt.Sprintf("HOST_%s_HOSTNAME", h)),
-			viper.GetInt("SERVER_PORT"),
-		)
+		hostname := viper.GetString(fmt.Sprintf("HOST_%s_HOSTNAME", h))
 		documentFolder := viper.GetString(fmt.Sprintf("HOST_%s_DOCUMENTFOLDER", h))
 		hosts[hostname] = &handlers.Host{
 			DocumentFolder: strings.ReplaceAll(path.Join(path.Dir("."), documentFolder), "\\", "/"),

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -28,7 +27,7 @@ func doPaginate(config *handlers.HandlerConfig, project *core.Project) (*handler
 		return nil, err
 	}
 
-	urlPath := strings.TrimPrefix(basePath, path.Dir(config.Host.DocumentFolder))
+	urlPath := strings.TrimPrefix(basePath, config.Host.DocumentFolder)
 	urlPath = strings.TrimPrefix(urlPath, "/")
 
 	paginate := handlers.Pagination{
@@ -138,7 +137,7 @@ func doBreadcrumbs(config *handlers.HandlerConfig, basePath string, project *cor
 			parts = append(parts, pagination.PathParts...)
 		}
 	}
-	urlPath := strings.TrimPrefix(basePath, path.Dir(config.Host.DocumentFolder))
+	urlPath := strings.TrimPrefix(basePath, config.Host.DocumentFolder)
 	urlPath = strings.TrimPrefix(urlPath, "/")
 
 	parts = append(parts, &handlers.PageItem{
@@ -369,7 +368,7 @@ func doChecklist(ctx *fiber.Ctx, config *handlers.HandlerConfig, project *core.P
 func ProjectBasePath(requestedPath string) (basePath string, err error) {
 	var info fs.FileInfo
 
-	if requestedPath == "" || requestedPath == "." {
+	if requestedPath == "" || requestedPath == "." || requestedPath == ".." {
 		return
 	}
 

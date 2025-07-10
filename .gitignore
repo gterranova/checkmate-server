@@ -4,3 +4,5 @@
 data
 documents
 tmp
+conf/config.env
+db/fiber.db

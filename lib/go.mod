@@ -1,6 +1,6 @@
 module terra9.it/checkmate
 
-go 1.20
+go 1.24.5
 
 require (
 	github.com/mitchellh/pointerstructure v1.2.1 // indirect
