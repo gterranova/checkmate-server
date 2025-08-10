@@ -42,6 +42,9 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/spf13/viper"
 	"terra9.it/checkmate/server/handlers"
+
+	_ "github.com/mattn/go-sqlite3"
+
 	_ "terra9.it/checkmate/server/handlers/auth"
 	_ "terra9.it/checkmate/server/handlers/checklist"
 	_ "terra9.it/checkmate/server/handlers/html"
