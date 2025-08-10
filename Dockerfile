@@ -22,7 +22,7 @@ RUN go mod download
 RUN CGO_ENABLED=1 GOOS=linux go build -o server server.go
 
 # Deploy the application binary into a lean image
-FROM gcr.io/distroless/base-debian12 AS build-release-stage
+FROM debian:12-slim AS build-release-stage
 
 WORKDIR /
 
@@ -34,7 +34,7 @@ COPY /server/.env /app/.env
 COPY --from=builder /app/server/server /app/server
 #COPY --from=builder /bin/sleep /bin/sleep
 
-USER nonroot:nonroot
+#USER nonroot:nonroot
 
 # Tells Docker which network port your container listens on
 EXPOSE 4300
